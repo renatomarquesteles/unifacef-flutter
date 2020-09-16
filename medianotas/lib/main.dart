@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() => runApp(MeuApp());
 
@@ -10,66 +11,74 @@ class MeuApp extends StatefulWidget {
 }
 
 class MeuFormulario extends State<MeuApp> {
-  final _formkey = GlobalKey<FormState>();
-  String nome, nota1, nota2;
+  final _formKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Média de notas'),
-        ),
-        body: SingleChildScrollView(
-          child: Container(
-            margin: EdgeInsets.all(15),
-            child: Form(
-              key: _formkey,
-              child: meuFormularioUI(),
-            ),
-          ),
-        ),
-      ),
-    );
+        home: Scaffold(
+            key: _scaffoldKey,
+            appBar: AppBar(title: new Text("Exemplo de Formulário")),
+            body: SingleChildScrollView(
+                child: Container(
+              margin: new EdgeInsets.all(15.0),
+              child: Form(
+                  key: _formKey,
+                  child: MeuFormularioUI(_scaffoldKey, _formKey)),
+            ))));
   }
 }
 
-Widget meuFormularioUI() {
-  return Column(
-    children: [
-      Text('Preencha o Formulário'),
-      TextFormField(
-        decoration: InputDecoration(hintText: 'Nome do aluno'),
+Widget MeuFormularioUI(var _scaffoldKey, var _formKey) {
+  var _nome;
+  var _nota1;
+  var _nota2;
+
+  return Column(children: [
+    Text("Meu Formulário"),
+    TextFormField(
+        decoration: InputDecoration(labelText: "Nome:"),
         maxLength: 50,
         onSaved: (String val) {
-          nome = val;
-        },
-      ),
-      TextFormField(
-        decoration: InputDecoration(hintText: 'Nota P1'),
-        keyboardType: TextInputType.phone,
-        maxLength: 4,
+          _nome = val;
+        }),
+    TextFormField(
+        decoration: InputDecoration(labelText: "Nota 1:"),
+        maxLength: 3,
+        keyboardType: TextInputType.number,
+        inputFormatters: <TextInputFormatter>[
+          FilteringTextInputFormatter.digitsOnly
+        ],
         onSaved: (String val) {
-          nota1 = val;
-        },
-      ),
-      TextFormField(
-        decoration: InputDecoration(hintText: 'Nota P2'),
-        keyboardType: TextInputType.phone,
-        maxLength: 4,
+          _nota1 = double.parse(val);
+        }),
+    TextFormField(
+        decoration: InputDecoration(labelText: "Nota 2:"),
+        maxLength: 3,
+        keyboardType: TextInputType.number,
+        inputFormatters: <TextInputFormatter>[
+          FilteringTextInputFormatter.digitsOnly
+        ],
         onSaved: (String val) {
-          nota2 = val;
-        },
-      ),
-      SizedBox(height: 15.0),
-      RaisedButton(
-        onPressed: _sendForm,
-        child: Text('Calcular média'),
-      )
-    ],
-  );
-}
+          _nota2 = double.parse(val);
+        }),
+    RaisedButton(
+        child: Text("Calcular"),
+        onPressed: () {
+          _formKey.currentState.save();
 
-_sendForm() {
-  print($nota1 + $nota2 / 2);
+          var media = (_nota1 + _nota2) / 2;
+          var situacao = "";
+          if (media >= 6) {
+            situacao = "aprovado";
+          } else {
+            situacao = "reprovado";
+          }
+
+          _scaffoldKey.currentState.showSnackBar(SnackBar(
+              content: Text(
+                  "Olá ${_nome}, você foi ${situacao} com média ${media}")));
+        })
+  ]);
 }
